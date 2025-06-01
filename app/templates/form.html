@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>House Price Prediction</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #e0f7fa, #f1f8e9);
+            color: #2e3a59;
+            margin: 0;
+            padding: 3rem 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: #ffffffdd;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            padding: 2.5rem 3rem;
+            max-width: 400px;
+            width: 100%;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .container:hover {
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        h2 {
+            margin-bottom: 1.8rem;
+            font-weight: 600;
+            font-size: 2rem;
+            text-align: center;
+            color: #317873;
+            letter-spacing: 1px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.3rem;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.3rem;
+            color: #317873;
+        }
+
+        input[type="number"] {
+            padding: 0.7rem 1rem;
+            border: 2px solid #a5d6a7;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            outline-offset: 2px;
+        }
+
+        input[type="number"]:focus {
+            border-color: #4caf50;
+            outline: none;
+            box-shadow: 0 0 6px #4caf50aa;
+        }
+
+        button {
+            background: #4caf50;
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(76, 175, 80, 0.4);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            letter-spacing: 0.8px;
+        }
+
+        button:hover {
+            background-color: #388e3c;
+            box-shadow: 0 8px 20px rgba(56, 142, 60, 0.6);
+        }
+
+        .result {
+            margin-top: 2rem;
+            text-align: center;
+            background: #c8e6c9;
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: #256029;
+            box-shadow: 0 5px 15px rgba(37, 96, 41, 0.3);
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>House Price Prediction</h2>
+        <form method="post" novalidate>
+            <label for="area">Area (sq ft):</label>
+            <input type="number" step="any" id="area" name="area" required placeholder="e.g. 2500" />
+
+            <label for="bedrooms">Bedrooms:</label>
+            <input type="number" id="bedrooms" name="bedrooms" required min="0" placeholder="e.g. 4" />
+
+            <label for="bathrooms">Bathrooms:</label>
+            <input type="number" id="bathrooms" name="bathrooms" required min="0" placeholder="e.g. 3" />
+
+            <label for="year_built">Year Built:</label>
+            <input type="number" id="year_built" name="year_built" required min="1800" max="2025" placeholder="e.g. 2005" />
+
+            <button type="submit">Predict Price</button>
+        </form>
+
+        {% if prediction is not none %}
+            <div class="result">
+                Predicted Price: ${{ prediction }}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
