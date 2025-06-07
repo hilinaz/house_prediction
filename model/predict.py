@@ -13,19 +13,24 @@ def predict_price(input_data):
     Predict house price based on input features.
     Ensures predictions are non-negative and reasonable.
     """
-    # Load model
-    model = joblib.load('model/model.pkl')
+    # Load the trained model
+    try:
+        model = joblib.load('model/model.joblib')
+    except FileNotFoundError:
+        print("❌ Error: Model file not found. Please train the model first.")
+        return
     
     # Preprocess input data
     X = preprocess_data_predict(input_data)
     
     # Make prediction
-    prediction = model.predict(X)[0]
-    
-    # Ensure prediction is non-negative
-    prediction = max(0, prediction)
-    
-    return prediction
+    try:
+        prediction = model.predict(X)[0]
+        # Ensure prediction is non-negative
+        prediction = max(0, prediction)
+        print(f"\n🏠 Predicted house price: ${prediction:,.2f}")
+    except Exception as e:
+        print(f"❌ Error making prediction: {str(e)}")
 
 if __name__ == "__main__":
     # Prompt user for input
@@ -43,10 +48,6 @@ if __name__ == "__main__":
             'year_built': year_built
         }])
         
-        prediction = predict_price(new_data)
-        print(f"\n🏠 Input Features:")
-        for col, val in new_data.iloc[0].items():
-            print(f"{col}: {val}")
-        print(f"\n💰 Predicted Price: ${prediction:,.2f}")
+        predict_price(new_data)
     except Exception as e:
         print(f"❌ Error making prediction: {str(e)}")

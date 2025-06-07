@@ -1,3 +1,3 @@
-Mean Absolute Error: $153,726.66
-Root Mean Squared Error: $187,182.88
-R² Score: 0.3022
+Mean Absolute Error: $162,641.41
+Root Mean Squared Error: $195,090.52
+R² Score: 0.2420

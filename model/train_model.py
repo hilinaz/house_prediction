@@ -7,6 +7,7 @@ import joblib
 from utils.preprocessing import preprocess_data
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 
 # Load data
 print("📊 Loading data...")
@@ -14,7 +15,18 @@ data = pd.read_csv('data/house_data.csv')
 
 # Preprocess data
 print("🔄 Preprocessing data...")
-X, y = preprocess_data(data)
+processed_data = preprocess_data(data)
+
+# Define features and target
+features = [
+    'area', 'bedrooms', 'bathrooms', 'house_age',
+    'bedrooms_squared', 'bathrooms_squared', 'area_squared',
+    'total_rooms'
+]
+target = 'price'
+
+X = processed_data[features]
+y = processed_data[target]
 
 # Train-test split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -28,9 +40,9 @@ model = xgb.XGBRegressor(
     min_child_weight=1,
     subsample=0.8,
     colsample_bytree=0.8,
-    random_state=42,
     objective='reg:squarederror',
-    early_stopping_rounds=50
+    random_state=42,
+    importance_type='gain'
 )
 
 # Train model
@@ -55,7 +67,7 @@ print(f"R² Score: {r2:.4f}")
 
 # Feature importance
 feature_importance = pd.DataFrame({
-    'feature': X.columns,
+    'feature': features,
     'importance': model.feature_importances_
 })
 feature_importance = feature_importance.sort_values('importance', ascending=False)
@@ -67,11 +79,13 @@ plt.title('Feature Importance')
 plt.tight_layout()
 plt.savefig('report/feature_importance.png')
 
-# Save model
-joblib.dump(model, 'model/model.pkl')
-print("\n✅ Model trained and saved to model/model.pkl")
+# Save model and ensure directory exists
+os.makedirs('model', exist_ok=True)
+joblib.dump(model, 'model/model.joblib')
+print("\n✅ Model trained and saved to model/model.joblib")
 
 # Save metrics to file
+os.makedirs('report', exist_ok=True)
 with open('report/model_metrics.txt', 'w') as f:
     f.write(f"Mean Absolute Error: ${mae:,.2f}\n")
     f.write(f"Root Mean Squared Error: ${rmse:,.2f}\n")

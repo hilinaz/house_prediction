@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
+import joblib
 
 def remove_outliers(df, columns, n_std=3):
     """Remove outliers based on standard deviation"""
@@ -32,47 +33,63 @@ def create_features(df):
     
     return df
 
-def preprocess_data(data):
-    """Preprocess data for training"""
-    # Create features
-    data = create_features(data)
+def preprocess_data(df):
+    # Create a copy to avoid modifying the original dataframe
+    df = df.copy()
     
-    # Remove outliers
+    # Compute house_age as (2024 - year_built) so that newer houses have higher values
+    df['house_age'] = 2024 - df['year_built']
+    
+    # Create squared terms to emphasize more bedrooms and bathrooms
+    df['bedrooms_squared'] = df['bedrooms'] ** 2  # Emphasize more bedrooms
+    df['bathrooms_squared'] = df['bathrooms'] ** 2  # Emphasize more bathrooms
+    df['area_squared'] = df['area'] ** 2  # Emphasize larger area
+    
+    # Compute total rooms
+    df['total_rooms'] = df['bedrooms'] + df['bathrooms']
+    
+    # Remove outliers using IQR method
     numeric_cols = ['area', 'bedrooms', 'bathrooms', 'year_built', 'price']
-    data = remove_outliers(data, numeric_cols)
-    
-    # Define features and target
-    features = ['area', 'bedrooms', 'bathrooms', 'year_built', 
-                'house_age', 'bedroom_ratio', 'bathroom_ratio', 'total_rooms']
-    target = 'price'
-    
-    X = data[features]
-    y = data[target]
+    df = remove_outliers(df, numeric_cols)
     
     # Scale features
     scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
+    features_to_scale = [
+        'area', 'bedrooms', 'bathrooms', 'house_age',
+        'bedrooms_squared', 'bathrooms_squared', 'area_squared',
+        'total_rooms'
+    ]
+    df[features_to_scale] = scaler.fit_transform(df[features_to_scale])
     
-    # Save scaler for later use
-    import joblib
-    joblib.dump(scaler, 'model/scaler.pkl')
+    # Save the scaler for later use in prediction
+    joblib.dump(scaler, 'model/scaler.joblib')
     
-    return pd.DataFrame(X_scaled, columns=features), y
+    # Only return the features needed for the model and the target
+    return df[features_to_scale + ['price']]
 
-def preprocess_data_predict(data):
-    """Preprocess data for prediction"""
-    # Create features
-    data = create_features(data)
+def preprocess_data_predict(input_data):
+    # Create a copy to avoid modifying the original dataframe
+    df = input_data.copy()
     
-    # Define features
-    features = ['area', 'bedrooms', 'bathrooms', 'year_built', 
-                'house_age', 'bedroom_ratio', 'bathroom_ratio', 'total_rooms']
+    # Compute house_age as (2024 - year_built) so that newer houses have higher values
+    df['house_age'] = 2024 - df['year_built']
     
-    X = data[features]
+    # Create squared terms to emphasize more bedrooms and bathrooms
+    df['bedrooms_squared'] = df['bedrooms'] ** 2  # Emphasize more bedrooms
+    df['bathrooms_squared'] = df['bathrooms'] ** 2  # Emphasize more bathrooms
+    df['area_squared'] = df['area'] ** 2  # Emphasize larger area
     
-    # Load and apply scaler
-    import joblib
-    scaler = joblib.load('model/scaler.pkl')
-    X_scaled = scaler.transform(X)
+    # Compute total rooms
+    df['total_rooms'] = df['bedrooms'] + df['bathrooms']
     
-    return pd.DataFrame(X_scaled, columns=features)
+    # Load the scaler and scale features
+    scaler = joblib.load('model/scaler.joblib')
+    features_to_scale = [
+        'area', 'bedrooms', 'bathrooms', 'house_age',
+        'bedrooms_squared', 'bathrooms_squared', 'area_squared',
+        'total_rooms'
+    ]
+    df[features_to_scale] = scaler.transform(df[features_to_scale])
+    
+    # Only return the features needed for the model
+    return df[features_to_scale]
